@@ -7,6 +7,8 @@ services:
       - --entrypoints.web.address=:80
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      # assign tls to websecure
+      - --entrypoints.websecure.http.tls.certresolver=letsencryptresolver
       - --entrypoints.websecure.address=:443
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false # require containers to define `traefik.enable=true` to be exposed
@@ -14,6 +16,8 @@ services:
       - --certificatesresolvers.letsencryptresolver.acme.email=${EMAIL}
       - --certificatesresolvers.letsencryptresolver.acme.storage=/acme.json
       - --certificatesresolvers.letsencryptresolver.acme.tlschallenge=true
+    networks:
+      - proxy
     ports:
       - 80:80
       - 443:443
@@ -35,6 +39,16 @@ services:
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.middlewares=admin
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
+
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: traefik/whoami
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.whoami.rule=Host(`whoami.lapre.com`)
+      - traefik.http.routers.whoami.entrypoints=websecure
 
 networks:
   proxy:
