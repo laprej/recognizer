@@ -23,6 +23,7 @@ services:
       - ${TRAEFIK_DIR}/acme.json:/acme.json # stores ACME (HTTPS) certificates
     labels:
       - traefik.enable=true
+      - traefik.docker.network=proxy
 
       # "admin" middleware definition
       # to be used by services that do not have their own security
@@ -34,3 +35,9 @@ services:
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.middlewares=admin
       - traefik.http.routers.traefik.tls.certresolver=letsencryptresolver
+
+networks:
+  proxy:
+    external: true
+  internal:
+    external: false
